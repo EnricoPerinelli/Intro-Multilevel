@@ -1,0 +1,261 @@
+Mplus VERSION 8.4
+MUTHEN & MUTHEN
+07/14/2025  10:22 AM
+
+INPUT INSTRUCTIONS
+
+  title: model 3
+
+  data: file is ex1_mplus.dat;
+
+  variable: names =
+  ID        !number ID for each employee
+  organiz   !this is the cluster variable
+  job_perf  !job performance
+  boss_exp  !experience of boss
+  OCB       !organizational citizenship behavior
+  sex;      !0=boys 1=girls
+
+  usevar =
+  job_perf
+  OCB;
+
+  cluster = organiz; !this variable defines the cluster
+
+  within = OCB;
+
+  define: center OCB (grandmean);
+  !grand mean centering the independent variable, so to have a meaningful
+  !interpetation of the intercept
+
+  analysis: type= twolevel random;
+  !"random" allows the inclusion of a random slope
+
+  model: %within%
+         beta1j | job_perf on OCB;
+         !beta1j is a random name to indicate random slope
+
+         %between%
+         job_perf with beta1j;
+
+  output: sampstat stdyx;
+
+
+
+*** WARNING in OUTPUT command
+  STANDARDIZED (STD, STDY, STDYX) options are available only for TYPE=TWOLEVEL RANDOM
+  with ESTIMATOR=BAYES.  Request for STANDARDIZED (STD, STDY, STDYX) is ignored.
+   1 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+model 3
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                        2000
+
+Number of dependent variables                                    1
+Number of independent variables                                  1
+Number of continuous latent variables                            1
+
+Observed dependent variables
+
+  Continuous
+   JOB_PERF
+
+Observed independent variables
+   OCB
+
+Continuous latent variables
+   BETA1J
+
+Variables with special functions
+
+  Cluster variable      ORGANIZ
+
+  Within variables
+   OCB
+
+  Centering (GRANDMEAN)
+   OCB
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Maximum number of iterations                                   100
+Convergence criterion                                    0.100D-05
+Maximum number of EM iterations                                500
+Convergence criteria for the EM algorithm
+  Loglikelihood change                                   0.100D-02
+  Relative loglikelihood change                          0.100D-05
+  Derivative                                             0.100D-03
+Minimum variance                                         0.100D-03
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+
+Input data file(s)
+  ex1_mplus.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of clusters                        100
+
+     Average cluster size       20.000
+
+     Estimated Intraclass Correlations for the Y Variables
+
+                Intraclass              Intraclass
+     Variable  Correlation   Variable  Correlation
+
+     JOB_PERF     0.224
+
+
+
+SAMPLE STATISTICS
+
+NOTE:  The sample statistics for within and between refer to the
+       maximum-likelihood estimated within and between covariance
+       matrices, respectively.
+
+
+     ESTIMATED SAMPLE STATISTICS FOR WITHIN
+
+
+           Means
+              JOB_PERF      OCB
+              ________      ________
+                0.000         0.000
+
+
+           Covariances
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       0.887
+ OCB            0.569         1.073
+
+
+           Correlations
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       1.000
+ OCB            0.583         1.000
+
+
+     ESTIMATED SAMPLE STATISTICS FOR BETWEEN
+
+
+           Means
+              JOB_PERF      OCB
+              ________      ________
+                5.307         0.000
+
+
+           Covariances
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       0.255
+ OCB            0.000         0.000
+
+
+           Correlations
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       1.000
+ OCB            0.000         0.000
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     JOB_PERF              5.308       0.250       2.000    0.25%       4.000      5.000      5.000
+            2000.000       1.502      -0.222       9.000    0.65%       6.000      6.000
+     OCB                   0.000       0.064      -2.484    2.55%      -0.484     -0.484     -0.484
+            2000.000       1.073      -0.039       2.516    2.80%       0.516      0.516
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        6
+
+Loglikelihood
+
+          H0 Value                       -2404.306
+          H0 Scaling Correction Factor      1.0887
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                    4820.613
+          Bayesian (BIC)                  4854.218
+          Sample-Size Adjusted BIC        4835.156
+            (n* = (n + 2) / 24)
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+ Residual Variances
+    JOB_PERF           0.567      0.025     22.456      0.000
+
+Between Level
+
+ JOB_PERF WITH
+    BETA1J             0.047      0.016      2.843      0.004
+
+ Means
+    JOB_PERF           5.226      0.057     90.980      0.000
+    BETA1J             0.535      0.044     12.097      0.000
+
+ Variances
+    JOB_PERF           0.227      0.048      4.704      0.000
+    BETA1J             0.054      0.018      2.982      0.003
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.656E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+DIAGRAM INFORMATION
+
+  Mplus diagrams are currently not available for multilevel analysis.
+  No diagram output was produced.
+
+
+     Beginning Time:  10:22:51
+        Ending Time:  10:22:51
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2019 Muthen & Muthen

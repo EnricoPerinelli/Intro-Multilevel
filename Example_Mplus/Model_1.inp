@@ -1,0 +1,18 @@
+title: model 1 
+
+data: file is ex1_mplus.dat;
+
+variable: names =
+ID        !number ID for each employee
+organiz   !this is the cluster variable
+job_perf  !job performance
+boss_exp  !experience of boss
+OCB       !organizational citizenship behavior
+sex;      !0=boys 1=girls
+
+usevar =
+job_perf;
+
+cluster = organiz; !this variable defines the clusters
+
+analysis: type = twolevel;

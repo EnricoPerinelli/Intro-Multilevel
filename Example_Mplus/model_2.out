@@ -1,0 +1,325 @@
+Mplus VERSION 8.4
+MUTHEN & MUTHEN
+07/14/2025  10:21 AM
+
+INPUT INSTRUCTIONS
+
+  title: model 2
+
+  data: file is ex1_mplus.dat;
+
+  variable: names =
+  ID        !number ID for each employee
+  organiz   !this is the cluster variable
+  job_perf  !job performance
+  boss_exp  !experience of boss
+  OCB       !organizational citizenship behavior
+  sex;      !0=boys 1=girls
+
+  usevar =
+  job_perf
+  OCB;
+
+  cluster = organiz; !this variable defines the cluster
+
+  within = OCB;
+
+  define: center OCB (grandmean);
+  !grand mean centering the independent variable, so to have a meaningful
+  !interpetation of the intercept
+
+  analysis: type= twolevel;
+
+  model: %within%
+         job_perf on OCB;
+
+  output: sampstat stdyx;
+
+
+
+*** WARNING in MODEL command
+  A y-variable has been declared on the within level but not referred to on
+  the between level.  Please check that this is what is intended.  If this is not intended,
+  specify the variable as a within variable.  Problem with:  JOB_PERF
+   1 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+model 2
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                        2000
+
+Number of dependent variables                                    1
+Number of independent variables                                  1
+Number of continuous latent variables                            0
+
+Observed dependent variables
+
+  Continuous
+   JOB_PERF
+
+Observed independent variables
+   OCB
+
+Variables with special functions
+
+  Cluster variable      ORGANIZ
+
+  Within variables
+   OCB
+
+  Centering (GRANDMEAN)
+   OCB
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Maximum number of iterations                                   100
+Convergence criterion                                    0.100D-05
+Maximum number of EM iterations                                500
+Convergence criteria for the EM algorithm
+  Loglikelihood change                                   0.100D-02
+  Relative loglikelihood change                          0.100D-05
+  Derivative                                             0.100D-03
+Minimum variance                                         0.100D-03
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+
+Input data file(s)
+  ex1_mplus.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of clusters                        100
+
+     Average cluster size       20.000
+
+     Estimated Intraclass Correlations for the Y Variables
+
+                Intraclass
+     Variable  Correlation
+
+     JOB_PERF     0.224
+
+
+
+SAMPLE STATISTICS
+
+NOTE:  The sample statistics for within and between refer to the
+       maximum-likelihood estimated within and between covariance
+       matrices, respectively.
+
+
+     ESTIMATED SAMPLE STATISTICS FOR WITHIN
+
+
+           Means
+              JOB_PERF      OCB
+              ________      ________
+                0.000         0.000
+
+
+           Covariances
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       0.887
+ OCB            0.569         1.073
+
+
+           Correlations
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       1.000
+ OCB            0.583         1.000
+
+
+     ESTIMATED SAMPLE STATISTICS FOR BETWEEN
+
+
+           Means
+              JOB_PERF      OCB
+              ________      ________
+                5.307         0.000
+
+
+           Covariances
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       0.255
+ OCB            0.000         0.000
+
+
+           Correlations
+              JOB_PERF      OCB
+              ________      ________
+ JOB_PERF       1.000
+ OCB            0.000         0.000
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     JOB_PERF              5.308       0.250       2.000    0.25%       4.000      5.000      5.000
+            2000.000       1.502      -0.222       9.000    0.65%       6.000      6.000
+     OCB                   0.000       0.064      -2.484    2.55%      -0.484     -0.484     -0.484
+            2000.000       1.073      -0.039       2.516    2.80%       0.516      0.516
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        4
+
+Loglikelihood
+
+          H0 Value                       -2416.982
+          H0 Scaling Correction Factor      1.4170
+            for MLR
+          H1 Value                       -2416.982
+          H1 Scaling Correction Factor      1.4170
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                    4841.964
+          Bayesian (BIC)                  4864.367
+          Sample-Size Adjusted BIC        4851.659
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                              0.000*
+          Degrees of Freedom                     0
+          P-Value                           1.0000
+          Scaling Correction Factor         1.0000
+            for MLR
+
+*   The chi-square value for MLM, MLMV, MLR, ULSMV, WLSM and WLSMV cannot be used
+    for chi-square difference testing in the regular way.  MLM, MLR and WLSM
+    chi-square difference testing is described on the Mplus website.  MLMV, WLSMV,
+    and ULSMV difference testing is done using the DIFFTEST option.
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.000
+
+CFI/TLI
+
+          CFI                                1.000
+          TLI                                1.000
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                            158.824
+          Degrees of Freedom                     1
+          P-Value                           0.0000
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value for Within                   0.000
+          Value for Between                  0.000
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+ JOB_PERF   ON
+    OCB                0.530      0.048     11.073      0.000
+
+ Residual Variances
+    JOB_PERF           0.586      0.026     22.770      0.000
+
+Between Level
+
+ Means
+    JOB_PERF           5.307      0.053     99.456      0.000
+
+ Variances
+    JOB_PERF           0.255      0.051      4.995      0.000
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+ JOB_PERF   ON
+    OCB                0.583      0.033     17.709      0.000
+
+ Residual Variances
+    JOB_PERF           0.660      0.038     17.206      0.000
+
+Between Level
+
+ Means
+    JOB_PERF          10.504      1.063      9.884      0.000
+
+ Variances
+    JOB_PERF           1.000      0.000    999.000    999.000
+
+
+R-SQUARE
+
+Within Level
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    JOB_PERF           0.340      0.038      8.854      0.000
+
+Between Level
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.781E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+DIAGRAM INFORMATION
+
+  Mplus diagrams are currently not available for multilevel analysis.
+  No diagram output was produced.
+
+
+     Beginning Time:  10:21:26
+        Ending Time:  10:21:26
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2019 Muthen & Muthen

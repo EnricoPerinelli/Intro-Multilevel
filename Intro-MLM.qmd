@@ -1,0 +1,1073 @@
+---
+format:
+  beamer-pdf:
+    theme: Singapore
+    toc: true
+    number-sections: true
+    slide-level: 2
+
+metadata:
+  title: "Introduction to Multilevel Modeling"
+  subtitle: "Concepts, Applications, and Resources"
+  author: "Enrico Perinelli"
+  institute: |
+    Department of Psychology and Cognitive Science \newline \newline
+    University of Trento \newline \newline \newline
+    \includegraphics[height=0.12\textheight]{figs/logoDIPSCO.png} \newline
+    \hspace{0\linewidth}\rule{1\linewidth}{0.2pt}
+    Lecture for the \textit{Master in Human Resources Management and Development} \newline
+    Department of Economic, Business and Statistical Sciences \newline
+    University of Palermo (Italy) \newline
+    \textbf{July 21-22, 2025}
+
+include-in-header:
+  text: |
+    \usepackage{fontawesome5}
+    \usepackage{tikz}
+    \usepackage{multirow}
+    \usepackage{caption}
+    \usepackage{amsmath}
+    \captionsetup[figure]{labelformat=empty} % Avoid "Figure" in the Figure Caption
+    \usepackage{hyperref}
+    \hypersetup{                             % Make url blue, but it does not work
+        colorlinks=true,
+        urlcolor=blue
+      }
+
+---
+
+# Welcoming
+
+Welcome to the course "Introduction to Multilevel Modeling".
+
+First of all, let me introduce myself.
+
+My name is **Enrico Perinelli**, I am a Tenure Track Researcher in Work and Organizational Psychology (WOP).
+
+My research is mainly focused on the intersections between
+
+-   WOP
+
+-   Psychometrics/Data Science
+
+-   Personality Psychology
+
+-   Educational Psychology
+
+------------------------------------------------------------------------
+
+## My Education and Career
+
+\small
+\setbeamercovered{transparent}
+\begin{itemize}
+    \item<1> A snapshot of my education/career:
+    \begin{itemize}
+        \item 2010, B.S. in Psychology at University of L'Aquila
+        \item 2013, M.S. in Clinical Psychology at University of Bologna
+        \item 02/2018, PhD in Personality and Organizational Psychology at Sapienza University of Rome
+        \item Since 09/2018 I do research and teaching at University of Trento
+    \end{itemize}
+    \item<2> See my \href{https://webapps.unitn.it/du/it/Persona/PER0209265/Curriculum}{\texttt{curriculum}} or my \href{https://scholar.google.com/citations?user=gZO04tIAAAAJ&hl=it&oi=ao}{\texttt{Google Scholar}} page for more information.
+\end{itemize}
+
+------------------------------------------------------------------------
+
+Some of my papers at the intersection between Psychometrics and WOP
+
+![](figs/papers.png){fig-align="center"}
+
+## Information about our course
+
+\begin{itemize}
+  \item \textbf{Course overview:} Introduction to requirements, the interplay between substantive and methodological considerations, and Simpson's paradox.
+  \item \textbf{Key concepts:} Definitions, equations, centering techniques, reliability indices, and other foundational elements in multilevel modeling.
+  \item \textbf{Reference materials:} A curated list of resources and textbooks for continued learning and application.
+  \item \textbf{Hands-on activities:} Working with both prepared datasets and your own data; optional interpretation of empirical articles of your interest.
+\end{itemize}
+
+
+# Introduction
+
+\small
+
+Climbing the ladder of (multilevel) complexity:
+
+\begin{enumerate}
+  \item Load, manipulate, preprocess data (80\% of the time in a data science project!!)
+  \item Descriptive statistics
+  \item Correlations
+  \item Inferential Statistics
+  \item GLM, GzLM, GLMM, GzLMM
+  \item Psychological Measurement (reliability and validity)
+  \item Structural Equation Modeling
+  \item Multilevel SEM and Longitudinal SEM
+  \item Dynamic SEM
+\end{enumerate}
+
+---
+
+\textbf{Software:}
+
+\begin{itemize}
+  \item \textbf{R}: open-source, flexible, and powerful for most statistical analyses (e.g., in data science, statistics, and psychometrics).
+  \item \textbf{M\textit{plus}}: particularly suited for latent variable modeling.
+\end{itemize}
+
+A common suggestion is to always use open and customizable software (e.g., R and Python), and to limit the use of commercial software to operations not available in open-source tools.  
+
+In the case of multilevel modeling, R is good enough for much of operations, with exception of more advanced Multilevel SEM (e.g., Multilevel SEM with prediction on random slopes and DSEM; see \texttt{\url{https://lavaan.ugent.be/tutorial/multilevel.html}})
+
+----
+
+\scriptsize
+
+WOP is historically integrated in classical **Psychometrics** models, but is also rapidly integrating with **Data Science**. See <https://github.com/EnricoPerinelli/AIP-2024_YoungKeynote/blob/master/AIP_2024_YoungKeynote.pdf> for a discussion.  
+
+\center
+
+![](figs/parad_shift.png){width="327"}  
+
+\flushleft
+
+Multilevel modeling could be considered \emph{theory-driven models}
+
+------------------------------------------------------------------------
+
+## Substantive-methodological synergy
+
+\begin{center}
+    \includegraphics[width=1\textwidth]{figs/subst_meth_synergy.png}
+\end{center}
+
+------------------------------------------------------------------------
+
+"Multilevel" matters in WOP theories, research, and practice  
+
+\hspace{1cm}
+
+> "Organizations are multilevel systems in which organizational entities (e.g., employees, teams, departments, organizations) reside in nested arrangements (e.g., employees are nested in teams, teams in departments, and departments in organizations) [...] [The] single-level perspective is limited because it cannot explain the complexities of most organizational phenomena, where the antecedents, mediators, moderators, and outcomes involved reside at different levels"
+
+\flushright \small
+(González-Romá \& Hernández, 2017, p. 184)
+
+---
+
+Why should we go over simple single-level (e.g., a simple linear regression) analysis or simple single-level theoretical models?
+
+The consequences of the violation of the non-independence of observations, which is created by the presence of "clusters" in the data (e.g., countries, departments, schools, leaders, etc.), is well-represented by the Simpson's paradox (Simpson, 1951) 
+
+-------
+
+## The Simpson's paradox
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+library(dplyr)
+library(tibble)
+library(patchwork)
+
+set.seed(42)
+
+# Parameters
+n_clusters <- 9; n_per_cluster <- 30
+
+# Simulation
+simpson_data <- bind_rows(lapply(1:n_clusters, function(i) {
+  x_shift <- 10 - i
+  x <- runif(n_per_cluster, 1, 5)
+  y <- 0.5 * x + i + rnorm(n_per_cluster, 0, 0.5)
+  tibble(
+    country = paste0("Cluster_", i),
+    x = x + x_shift,
+    y = y
+  )}))
+
+p1 <- ggplot(simpson_data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Relation between x and y (single-level analysis)",
+       x = "x", y = "y") +
+  theme_minimal()
+```
+
+---
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+p1
+```
+
+---
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+p2 <- ggplot(simpson_data, aes(x = x, y = y, color = country)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relation between x and y (multilevel analysis)",
+       x = "x", y = "y", color = "Cluster") +
+  theme_minimal()
+```
+
+---
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+p2
+```
+
+---
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+(p1 + p2) + 
+  patchwork::plot_annotation(
+    title = "Simpson's Paradox"
+  ) & theme(plot.title = element_text(hjust = 0.5))
+```
+
+----
+
+Any example of the above scenario in WOP?  
+
+For example $x$ = Training hours, $y$ = performance, $j$ (cluster) = company
+
+Beyond the Simpson's paradox, other (less extreme) cases can be visualized here \texttt{\url{http://mfviz.com/hierarchical-models/}}
+
+
+# Key Concepts
+
+Understanding the \textit{vocabulary of multilevel analysis} is the first step toward mastering this type of modeling.  
+
+In what follows, we will explore the most important concepts, terms, ambiguities, and characteristics of multilevel models.
+
+
+## One framework, a lot of names
+
+\small
+
+Multilevel models (MLMs) are also referred to as **mixed-effects models**, **hierarchical linear models (HLMs)**, or **random coefficient models**.  
+
+Although the terminology varies slightly across disciplines, these terms usually refer to the same family of models. All of them are designed to account for **nested/clustered/hierarchical data structures**.  
+
+In typical applications, nesting occurs due to:\footnote{\textit{Note:} In this course, we focus on two-level models for simplicity. Multilevel models can include more than two levels, but this is uncommon in practice due to the large sample size requirements.}
+\begin{itemize}
+  \item Clusters (e.g., employees within teams) or 
+  \item Repeated measures within individuals (in this case, the cluster is the ID of the participant) (Ployhart, Bliese, \& Strizver, 2025)
+\end{itemize}
+
+---
+
+\footnotesize
+
+Clustered (Cross-Sectional) Data: Employees Nested Within Teams
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+
+library(dplyr)
+
+set.seed(123)
+n_teams <- 30
+employees_per_team <- 10
+total_employees <- n_teams * employees_per_team
+
+# Between-level variable: Quality of leaderships (scale 1–10)
+team_df <- data.frame(
+  team_id = 1:n_teams,
+  team_leadership = runif(n_teams, min = 1, max = 10)
+)
+
+# Simulate dataset
+df_cluster <- data.frame(
+  employee_id = 1:total_employees,
+  team_id = rep(1:n_teams, each = employees_per_team)
+) %>%
+  left_join(team_df, by = "team_id") %>%
+  mutate(
+    performance = 40 + 3 * team_leadership + rnorm(n(), mean = 0, sd = 5)
+  )
+
+# Extract dataset
+# writexl::write_xlsx(df_cluster, "df_cluster.xlsx")
+```
+
+---
+
+\footnotesize
+
+Intensive Longitudinal Data: Repeated Measures Within Individuals
+
+\tiny
+
+```{r}
+#| message: false
+#| echo: true
+
+library(dplyr)
+
+set.seed(456)
+n_subjects <- 50
+n_timepoints <- 9
+
+trait_consc <- rnorm(n_subjects, mean = 5, sd = 1)  # between-person trait
+subject_intercepts <- rnorm(n_subjects, mean = 50, sd = 4)  # baseline
+
+# Simulate dataset
+df_IntensiveLongitudinal <- data.frame(
+  subject_id = rep(1:n_subjects, each = n_timepoints),
+  time = rep(0:(n_timepoints - 1), times = n_subjects)
+) %>%
+  mutate(
+    coscientiousn = trait_consc[subject_id],
+    intercept = subject_intercepts[subject_id],
+    Perform = intercept + 1.5 * time +
+      2 * coscientiousn +   
+      rnorm(n_subjects * n_timepoints, sd = 3)
+  ) %>% 
+  select(-intercept) %>% 
+  round(., 2)
+
+# Extract dataset
+# writexl::write_xlsx(df_IntensiveLongitudinal, "df_IntensiveLongitudinal.xlsx")
+```
+
+---
+
+## Between-level vs within-level
+
+\textbf{Within-level} (variance, variables, effects, etc) refers to units, or to "Level-1".    
+
+\textbf{Between-level} (variance, variables, effects, etc) refers to clusters, or to "Level-2".  
+
+
+\vspace{1cm}
+\textit{Note:} This distinction is largely used in the Multilevel SEM framework (e.g., Heck \& Reid, 2023).  
+
+---
+
+## Fixed Effects, Random Effects, and Random Parameters
+
+There is often confusion between these terms  
+(see: \url{https://statmodeling.stat.columbia.edu/2005/01/25/why_i_dont_use/}).  
+
+The terms \textbf{fixed effects} and \textbf{random effects} are commonly used in the context of \textit{multilevel regression} (for this reason also called \textit{mixed-effects models}), as well as in \textit{meta-analysis}.  
+
+In contrast, the term \textbf{random parameters} (random intercept/s and random slope/s) is more frequently used in the context of \textit{Multilevel SEM)}.
+
+---
+
+Using Heck and Thomas (2015, pp. 420 and 426) glossary:
+
+\only<1>{
+\small
+\textbf{Fixed Effects} [...] In mixed effects and multilevel modeling, \textbf{fixed effects} often refer to estimates that are defined as nonvarying across higher-order units. The effects are seen as fixed to be the same within the entire sample of individuals.  
+
+In contrast, a \textbf{random effect} is assumed to vary across the higher-level units. For example, we might see the mean of salary as varying across different organizations.  
+
+In a multilevel model, the \textcolor{red}{random effects are therefore the variance and covariance parameters at the group level}, which may be seen to have varied effects across the sample of groups.  
+}
+
+\only<2>{
+\small
+\textbf{Random effects} When some effect in a statistical model is modeled as being random, we mean that we wish to draw conclusions about the population from which the observed units were drawn, rather than about these particular units themselves. Random effects modeling puts a focus on the variance of an effect across the population from which the units were sampled, rather than assuming the effect being fixed to one value in the population.
+}
+
+\only<3>{
+\small
+\begin{itemize}
+  \item \textbf{Random intercept} This is a model where the level of the outcome mean is allowed to vary across the units in the sample. Differences in the levels of the means may be explained by unit-level predictors.  
+  \item \textbf{Random slope} This is a model where the size of the level-1 slope summarizing the regression of Y on X is allowed to vary across units in the sample. Differences in the strength of the level-1 slopes may be explained by unit-level predictors.
+\end{itemize}
+}
+
+---
+
+## Equations
+
+In simple linear regression analysis, parameters are fixed and variables vary only across units $i$.    
+In multilevel modeling, however, we introduce **clustering**, usually indexed by the subscript $j$.  
+
+Level-1 (within-level) predictors are typically denoted by $x$, while Level-2 (between-level) predictors are denoted by $w$.
+
+---
+
+\small
+
+Drawing on common notation (e.g., McNeish, 2017a), we can represent a two-level model with:
+\begin{itemize}
+  \item one Level-1 predictor
+  \item one Level-2 predictor
+  \item random intercept and random slope
+\end{itemize}
+
+Level-1 equation: $y_{ij} = \beta_{0j} + \beta_{1j}x_{1ij} + r_{ij}$
+
+Level-2 equations:
+\begin{itemize}
+  \item $\beta_{0j} = \gamma_{00} + \gamma_{01}w_j + \mu_{0j}$
+  \item $\beta_{1j} = \gamma_{10} + \gamma_{11}w_j + \mu_{1j}$
+\end{itemize}
+
+---
+
+The combined model will result:
+$$y_{ij} = \gamma_{00} + \gamma_{10}x_{ij} + \gamma_{01}w_j + \gamma_{11}x_{ij}w_j + \mu_{0j} + \mu_{1j}x_{ij} + r_{ij}$$
+
+This equation includes:
+\begin{itemize}
+  \item fixed effects: $\gamma$'s
+  \item cross-level effect (on the intercept): $\gamma_{01} w_j$
+  \item cross-level interaction (slope moderation): $\gamma_{11}x_{ij}w_j$  
+  \item random effects:  
+$$
+\begin{bmatrix}
+\mu_{0j} \\
+\mu_{1j}
+\end{bmatrix}
+\sim \mathcal{N} \left(
+\begin{bmatrix}
+0 \\
+0
+\end{bmatrix},
+\begin{bmatrix}
+\tau_{00} & \tau_{01} \\
+\tau_{01} & \tau_{11}
+\end{bmatrix}
+\right)
+$$
+
+\item residual error: $r_{ij} \sim \mathcal{N}(0, \sigma^2)$
+\end{itemize}
+
+---
+
+\small
+
+The change in notation from simple Structural Equation Modeling (SEM) to \textbf{Multilevel SEM (MSEM)} is quite similar.  
+
+However, it places greater emphasis on the orthogonal decomposition of the total variance into the between-cluster ($B$) and within-cluster ($W$) components.
+
+The total variance-covariance matrix is:  
+$\mathrm{Cov}(\mathbf{y}_{ij}) = \boldsymbol{\Sigma}_T = \boldsymbol{\Sigma}_W + \boldsymbol{\Sigma}_B$
+
+A multilevel factor model (multilevel CFA) is typically expressed as:  
+$\mathbf{y}_{ij} = \boldsymbol{\gamma} + \boldsymbol{\Lambda}_W \boldsymbol{\eta}_{Wij} + \boldsymbol{\Lambda}_B \boldsymbol{\eta}_{Bj} + \boldsymbol{\varepsilon}_{ij}$
+
+Structural relations at the within level:  
+$\boldsymbol{\eta}_{ij} = \boldsymbol{\alpha_j} + \mathbf{B}_j \boldsymbol{\eta}_{ij} + \boldsymbol{\Gamma}_j \mathbf{x}_{ij} + \boldsymbol{\zeta}_{ij}$
+
+Structural relations at the between level:  
+$\boldsymbol{\eta}_j = \boldsymbol{\mu} + \mathbf{B} \boldsymbol{\eta}_j + \boldsymbol{\Gamma} \mathbf{x}_j + \boldsymbol{\zeta}_j$
+
+\flushright
+\tiny
+These equations correspond to Eq. 26.1, 26.5, 26.9, and 26.10 in Heck and Reid (2023).
+
+---
+
+## Centering in multilevel models
+
+Centering is the process of transforming a variable so that a value of zero has a meaningful interpretation: its mean.  
+
+This is typically done by subtracting a mean, either the overall (grand) mean or the cluster-specific (group) mean, from each observation.
+
+It's a long standing debate in common multilevel observed-variable approach (Enders \& Tofighi, 2007; Hamaker \& Grasman, 2015; Hamaker \& Muthen, 2020), as well as in multilevel latent-variable approaches (McNeish \& Hamaker, 2020).   
+
+---
+
+\footnotesize
+
+\begin{itemize}
+  \item \textbf{Group-mean centering} (also called \textit{Centering Within Cluster}, \textbf{CWC}) is used to isolate within-level effects: $x_{ij} - \bar{x}_{j}$ where $x_{ij}$ is a Level-1 variable and $\bar{x}_j$ is the group mean (e.g., average stress in a class).
+    \item \textbf{Grand-mean centering (\textbf{GMC})} is used in multilevel regression when the goal is to retain both within- and between-level variance: $x_{ij} - \bar{x}$, where $x_{ij}$ is a Level-1 variable (e.g., student stress) and $\bar{x}$ is the grand mean. \textcolor{red}{Note: GMC does not separate within- and between-level effects. If decomposition is needed, use CWC(M) or GMC(M) instead, where ``(M)'' refers to adding the group mean term $\beta_p \bar{x}_j$ to the model.}
+  \item \textbf{Latent-mean centering}, as implemented in M\textit{plus}, performs centering at the model level. This avoids manual transformations and preserves the multilevel structure in latent variable models. It is particularly useful in Multilevel SEM, such as DSEM.
+\end{itemize}
+
+To make the best centering choice, \textbf{carefully read} \textcolor{blue}{González-Romá and Hernández (2023, p. 631, \textit{Centering L1 predictors})} and \textcolor{blue}{Hamaker and Muthén (2020)}.
+
+---
+
+::: {.callout-warning title="Centering in multilevel autoregressive models"}
+When dealing with multilevel autoregressive models, carefully read Hamaker and Grasman (2015). Indeed, in this case the autoregressive $t{-}1$ variable (e.g., $x_{t-1}$ predicting $x_t$) should \textbf{not} be group-mean centered, as this may introduce the \textit{Nickell bias}: By removing the person mean, you risk eliminating meaningful information and biasing the autoregressive estimate downward.  
+
+Other predictors can be centered as usual: between-level variables grand-mean centered, within-level variables group-mean centered.  
+
+Instead, in the context of DSEM M\textit{plus} automatically apply the latent centering approach (see McNeish \& Hamaker, 2020).
+:::
+
+---
+
+\begin{figure}
+  \centering
+        \includegraphics[width=1\linewidth]{figs/center_excel.png}
+\end{figure}
+
+\vspace{0.5cm}
+
+\footnotesize
+
+\textcolor{orange}{\faExclamationTriangle} Simulated dataset created with ChatGPT; intended only to show Excel functions for centering (see \texttt{multilevelCenteringDataset.xlsx})
+
+---
+
+
+::: {.callout-tip title="Centering in M\textit{plus} and \texttt{R}"}
+
+\tiny
+
+M\textit{plus} grand-mean centering \rightarrow\  \texttt{DEFINE: CENTER x (GRANDMEAN);}  
+M\textit{plus} group-mean centering \rightarrow\  \texttt{DEFINE: CENTER x (GROUPMEAN); }  
+\texttt{R} (\texttt{tidyverse}) grand-mean centering (GMC; $x_{ij} - \bar{x}$):
+```{r}
+#| echo: true
+
+df_cluster <- df_cluster %>%
+  mutate(
+    performance_GMC = performance - mean(performance, na.rm = TRUE)
+    )
+```
+\texttt{R} (\texttt{tidyverse}) group-mean centering (or Centering Within Cluster, CWC; $x_{ij} - \bar{x}_{j}$)
+```{r}
+#| echo: true
+
+df_cluster <- df_cluster %>%
+  group_by(team_id) %>%
+  mutate(
+    performance_CWC = performance - mean(performance, na.rm = TRUE)
+  ) %>%
+  ungroup()
+```
+
+\texttt{R} (\texttt{tidyverse}): calculate the group mean (i.e., average performance at team level $\bar{x}_j$) to include as a Level-2 predictor in CWC(M) or GMC(M)
+
+```{r}
+#| echo: true
+
+df_cluster <- df_cluster %>%
+  group_by(team_id) %>%
+  mutate(
+    performance_mean_team = mean(performance, na.rm = TRUE)
+  ) %>%
+  ungroup()
+```
+
+:::
+
+---
+
+## Reliability in Multilevel Models
+
+\small
+
+In multilevel models, reliability of multiple-indicator tools cannot be assessed in the same way as in traditional cross-sectional designs.  
+
+Moreover, it is important to distinguish between:
+\begin{itemize}
+  \item Clustered designs (e.g., individuals within teams)
+  \item Intensive Longitudinal Data (ILD) designs (e.g., repeated measures within individuals)
+\end{itemize}
+
+The topic is broad, as multiple reliability indices have been proposed (see Geldhof et al., 2014; Revelle \& Wilt, 2019; Shrout \& Lane, 2012).  
+A potential suggestion could be the follow:
+
+
+| Design      |  Within                            |  Between                     |
+|:------------|:----------------------------------:|:----------------------------:|
+| Clustered   | $\omega_{\mathrm{within}}$         | $\omega_{\mathrm{between}}$  |
+| ILD         | $R_{c}$                            | $R_{kF}$                     |
+
+---
+
+\scriptsize
+
+```{r}
+#| echo: true
+#| warning: false
+
+library(multilevelTools)
+
+data(aces_daily, package = "JWileymisc")
+omegaSEM(
+  items = c("COPEPrb", "COPEPrc", "COPEExp"),
+  id = "UserID",
+  data = aces_daily,
+  savemodel = FALSE)
+```
+
+---
+
+\tiny
+
+```{r}
+#| echo: true
+#| warning: false
+
+# Create a small Intensive Longitudinal Dataset
+# (see `?psych::multilevel.reliability`).
+
+shrout <- structure(
+  list(
+    Person = c(
+      1L, 2L, 3L, 4L, 5L, 1L, 2L, 3L, 4L, 
+      5L, 1L, 2L, 3L, 4L, 5L, 1L, 2L, 3L, 4L, 5L),
+    Time = c(1L, 1L, 
+             1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 
+             4L, 4L),
+    Item1 = c(2L, 3L, 6L, 3L, 7L, 3L, 5L, 6L, 3L, 8L, 4L, 
+              4L, 7L, 5L, 6L, 1L, 5L, 8L, 8L, 6L),
+    Item2 = c(3L, 4L, 6L, 4L, 
+              8L, 3L, 7L, 7L, 5L, 8L, 2L, 6L, 8L, 6L, 7L, 3L, 9L, 9L, 7L, 8L),
+    Item3 = c(6L, 4L, 5L, 3L, 7L, 4L, 7L, 8L, 9L, 9L, 5L, 7L, 
+              9L, 7L, 8L, 4L, 7L, 9L, 9L, 6L)),
+  .Names = c("Person", "Time", "Item1", "Item2", "Item3"),
+  class = "data.frame", row.names = c(NA, -20L)
+)
+```
+
+---
+
+\tiny
+
+```{r}
+#| echo: true
+#| warning: false
+
+library(psych)
+
+multilevel.reliability(
+  shrout,
+  grp="Person",
+  Time="Time",
+  items=c("Item1", "Item2", "Item3")
+)
+```
+
+---
+
+## IRR and IRA
+
+\footnotesize
+
+In organizational and multilevel research, Inter-Rater Reliability (IRR) and Inter-Rater Agreement (IRA) are two conceptually distinct but complementary families of indices used to assess data aggregated at the group level.  
+
+According to LeBreton and Senter (2008, p. 816)
+\begin{itemize}
+  \item \textbf{IRR} refers to the relative consistency in ratings provided by multiple judges of multiple targets. Estimates of IRR are used to address whether judges rank order targets in a manner that is relatively consistent with other judges. The concern here is not with the equivalence of scores but rather with the equivalence of relative rankings.
+  \item \textbf{IRA} refers to the absolute consensus in scores furnished by multiple judges for one or more targets. Estimates of IRA are used to address whether scores furnished by judges are interchangeable or equivalent in terms of their absolute value.
+\end{itemize}
+
+---
+
+### IRR + IRA indices
+
+\scriptsize
+
+Although ICC indices are often considered measures of inter-rater reliability (IRR), LeBreton and Senter (2008, p. 819, Table 1) classify them under the broader category of IRR + IRA indices, as they capture both relative consistency and absolute agreement among raters.
+
+\setbeamercovered{transparent}
+\begin{itemize}
+  \item<1> $\text{ICC}(1)$: Proportion of variance in $x_{ij}$ attributable to group membership ($j$). It quantifies the degree of clustering. For example, $\text{ICC}(1) = 0.15$ indicates that 15\% of the variance is due to differences between clusters. Values above 0.05–0.10 are often taken as a justification for using multilevel modeling.
+$$
+\text{ICC}(1) = \frac{\sigma^2_{\text{between}}}{\sigma^2_{\text{between}} + \sigma^2_{\text{within}}} = \frac{\tau_{00}}{\tau_{00} + \sigma^2}
+$$
+  \item<2> $\text{ICC}(2)$: Reliability of \textbf{group means}, also known as $\text{ICC}(1,k)$ or $\text{ICC}(k)$ (LeBreton et al., 2023, pp. 243–244). "Estimates of $\text{ICC}(2)$ should be reported when unit-level means are computed to serve as aggregate-level variables" (LeBreton et al., 2023, p. 243). When cluster sizes vary (e.g., teams of 5 to 20), $K$ is often set to the \textbf{median group size} (LeBreton et al., 2023, pp. 243–244). When $K$ is low, it may differ from $\text{ICC}(1)$. Good values are > .70.
+
+$$
+\text{ICC}(2) = \frac{K \cdot \text{ICC}(1)}{1 + (K - 1) \cdot \text{ICC}(1)} = \frac{\sigma^2_{\text{between}}}{\sigma^2_{\text{between}}+ \frac{\sigma^2_{\text{within}}}{K}}
+$$
+
+\end{itemize}
+
+---
+
+### IRA indices
+
+The most used IRA index is the $r_{WG}$ (which represents a within-group agreement index). The multi-item version is the $r_{WG(J)}$ (Biemann, Cole, \& Voelpel, 2012).
+
+$$
+r_{WG} = 1-\frac{S^2_x}{\sigma^2_E} = 1 - \frac{S^2_{\text{observed}}}{S^2_{\text{expected}}}
+$$
+
+"$S^2_x$ is the observed variance on the variable $X$ (e.g., leader trust and support) taken over $K$ different judges or raters and $\sigma^2_E$ is the variance expected when there is a complete lack of agreement among the judges. This is the variance obtained from a theoretical null distribution representing a complete lack of agreement among judges." (LeBreton \& Senter, 2008, p. 218).
+
+---
+
+\begin{figure}
+  \centering
+        \includegraphics[width=1\linewidth]{figs/IRA.png}
+\end{figure}
+
+\footnotesize
+\flushright
+LeBreton et al. (2023, p. 248)
+
+---
+
+### IRR and IRA in \texttt{R} and M\textit{plus}
+
+\begin{itemize}
+  \item The \texttt{multilevel} package provides functions for computing \texttt{ICC1}, \texttt{ICC2}, \texttt{rwg}, \texttt{rwg.j}, and other commonly used IRR/IRA indices.
+  \item The \texttt{performance} package includes a general-purpose \texttt{icc()} function, compatible with mixed models fitted via \texttt{lme4}.
+  \item The \texttt{irr} package offers several coefficients for inter-rater reliability and agreement (e.g., Cohen’s $\kappa$, Kendall’s $W$).
+  \item M\textit{plus} automatically computes ICCs when using \texttt{TYPE = TWOLEVEL;} in model estimation.
+\end{itemize}
+
+---
+
+## Model comparison and selection
+
+As in many statistical analyses, the goal is often to compare several competing models.
+
+\vspace{1cm}
+
+In mixed-effects models, for example, we can compare models predicting the same dependent variable (i.e., $y_{ij}$) by testing increasingly complex models, progressively adding fixed and random effects.
+
+---
+
+A potential pipeline is the following: 
+
+\small
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|p{6cm}|l|}
+\hline
+\textbf{Model} & \textbf{Question} & \textbf{Mixed-Effects Equation} \\
+\hline
+1. Null (intercept only) & Is there substantial between-level variability to be explained in my outcome variable? & $y_{ij} = \gamma_{00} + u_{0j} + r_{ij}$ \\
+\hline
+2. Random intercept - Fixed slope & Does the intercept of my specified regression equation vary across clusters? & $y_{ij} = \gamma_{00} + \textcolor{red}{\gamma_{10} x_{ij}} + u_{0j} + r_{ij}$ \\
+\hline
+3. Random intercept - Random slope & Does the slope of my specified regression equation vary across clusters? & $y_{ij} = \gamma_{00} + \gamma_{10} x_{ij} + \textcolor{red}{u_{1j} x_{ij}} + u_{0j} + r_{ij}$ \\
+\hline
+4. Intercept as outcome & Are there between-level variables that can predict variability in intercept? & $y_{ij} = \gamma_{00} + \gamma_{10}x_{ij} + \textcolor{red}{\gamma_{01} w_j} + u_{1j} x_{ij} + u_{0j} + r_{ij}$ \\
+\hline
+5. Intercept and slope as outcomes & Are there between-level variables that can predict variability in intercept and slope? & $y_{ij} = \gamma_{00} + \gamma_{10} x_{ij} + \gamma_{01} w_j + \textcolor{red}{\gamma_{11} x_{ij} w_j} + u_{1j} x_{ij} + u_{0j} +  r_{ij}$ \\
+\hline
+\end{tabular}
+}
+
+\pause
+
+\scriptsize
+
+Model comparison can be done through:
+\begin{itemize}
+  \item \textcolor{blue}{Likelihood ratio test} ($\chi^2$ comparison) (\texttt{lmtest::lrtest} in \texttt{R} and Satorra-Bentler $\Delta\chi^2$ for MSEM in M\textit{plus}), where a significant \textit{p}-value indicates that the more complex model provides a significantly better fit.
+  \item \textcolor{blue}{Information criteria} such as AIC and BIC, where lower values indicate better-fitting models.
+\end{itemize}
+
+---
+
+## Explained Variance ($R^2$)
+
+In multilevel models, variance is partitioned across levels. Thus, the model may explain some variance at each level, not a single global $R^2$.  
+
+Nakagawa and Schielzeth (2013) proposed the
+\begin{itemize}
+  \item Marginal $R^2$: variance explained by fixed effects
+  \item Conditional $R^2$: variance explained by fixed + random effects
+\end{itemize}
+
+\vspace{0.5cm}
+
+In \texttt{R} \rightarrow\ \texttt{performance::r2} or \texttt{MuMIn::r.squaredGLMM}
+
+
+# Advanced topics
+
+Multilevel modeling includes additional methodological issues that deserve attention.  
+
+In what follows, there are selected concepts, each briefly introduced and referenced for further reading.  
+
+\scriptsize
+
+::: {.callout-tip title="Comprehensive Resources"}
+A comprehensive review of multilevel modeling topics (including those not covered here, such as statistical power and handling missing data) can be found in \textcolor{blue}{González-Romá and Hernández (2023)} and \textcolor{blue}{LeBreton et al. (2023)}.  
+
+\vspace{0.3cm}
+For detailed textbook treatments, see \textcolor{blue}{Raudenbush and Bryk (2002)}, \textcolor{blue}{Snijders and Bosker (2012)}, \textcolor{blue}{Hox, Moerbeek, and van de Schoot (2017)}.
+
+\vspace{0.3cm}
+For Multilevel SEM, see \textcolor{blue}{Heck and Thomas (2015)}, \textcolor{blue}{Heck and Reid (2023)}, \textcolor{blue}{Sadikaj et al. (2021)}.
+
+\vspace{0.3cm}
+For a parallel overview between latent growth modeling and multilevel modeling, see \textcolor{blue}{Grimm et al. (2017)}.
+:::
+
+---
+
+## Cross-level Isomorphism
+
+\scriptsize
+
+Cross-level isomorphism refers to the assumption that the measurement model (e.g., factor structure and loadings) is equivalent at both the within- and between-levels.  
+
+This is analogous to \textbf{measurement invariance} in longitudinal or multi-group settings.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\linewidth]{figs/isomorph_table.png}
+\end{figure}
+
+\flushright
+Suggested technical reading: Tay, Woo, \& Vermunt (2014)  
+Suggested theoretical reading: Aguinis, Beltran, \& Marshall (2024)
+
+---
+
+## Restricted Maximum Likelihood (REML)
+
+\footnotesize
+
+\begin{itemize}
+  \item REML is an estimation method used to get more accurate estimates of variance components in multilevel models when the number of clusters is small.
+  \item ML estimates fixed effects and variances at the same time, without adjusting for the fact that some variability has already been explained by the fixed effects.
+  \item As a result, ML tends to underestimate the variance of random effects (like random intercepts and slopes).
+  \item In contrast, REML first removes the influence of fixed effects, and then estimates the variance components using only the residual variation. This leads to less biased and more reliable estimates of random-effect variances.
+\end{itemize}
+
+\flushright
+Suggested reading: McNeish (2017a)
+
+---
+
+## Multilevel Mediation
+
+\footnotesize
+
+\begin{itemize}
+  \item Multilevel mediation extends classical mediation models to hierarchical data structures.
+  \item Several configurations exist, such as \textcolor{red}{1-1-1} (all variables at the within-level), \textcolor{red}{2-1-1} (predictor at the between-level, mediator and outcome at the within-level), \textcolor{red}{2-2-1} (both predictor and mediator at the between-level).
+  \item McNeish (2017b, Table 1) showed that 1-1-1 and 2-1-1 were the most used designs.  
+  \item Unlike classical mediation, multilevel mediation often involves \textbf{random slopes} and the \textbf{covariances between them}, making the indirect effect more complex than just $a \times b$ \url{https://quantpsy.org/medmc/medmc111.htm}  
+  \item For examples and M\textit{plus} code, see: \url{https://www.statmodel.com/download/Preacher.pdf}
+\end{itemize}
+
+
+\vspace{0.4cm}
+\flushright
+Suggested readings: McNeish (2017b); Preacher et al. (2010, 2011, 2016)
+
+---
+
+## Standard Error Correction When Clustering is negligible or not substantive
+
+\small
+
+\begin{itemize}
+  \item In some cases (e.g., Marsh et al., 2019; Perinelli, Pisanu, Checchi, Scalas, \& Fraccaroli, 2022), clustering is not of substantive interest or has a negligible impact (e.g., low ICC values).  
+  \item In such situations, it is acceptable to run a single-level SEM model while adjusting standard errors to account for clustering.  
+  \item In M\textit{plus}, use the option \texttt{TYPE = COMPLEX;} together with the MLR estimator, and specify the clustering variable via \texttt{CLUSTER = MY\_CLUSTER;}.  
+  \item In \texttt{R} (with \texttt{lavaan}), use the argument \texttt{cluster = "MY\_CLUSTER"} and the robust estimator \texttt{estimator = "MLR"} inside the \texttt{sem()} function.
+\end{itemize}
+
+\vspace{0.4cm}
+\flushright
+\footnotesize Suggested reading: McNeish, Stapleton, \& Silverman (2017)
+
+---
+
+## Location-Scale Models
+
+\footnotesize
+
+\begin{itemize}
+  \item Location-scale models are more commonly used in economics, but have recently been introduced in WOP.  
+  \item They allow the modeling of both the \textbf{mean (location)} and the \textbf{variance (scale)} of an outcome variable as a function of predictors.  
+  \item This means that in addition to explaining the average level of a variable (e.g., job satisfaction), we can also explain \textbf{individual differences in variability} (e.g., fluctuations in satisfaction across time or contexts).  
+  \item Adding the $j$ subscript to the residual variance
+
+$$r_{ij} \sim \mathcal{N}(0, \sigma^2_j)$$
+$$\sigma^2_j=\mathrm{exp}(\omega_{0}+\mu_{2j})$$
+
+  \item Such models are especially useful in ILD or EMA data, where variability in affect or behavior is a meaningful outcome.
+\end{itemize}
+
+---
+
+\begin{figure}
+  \centering
+        \includegraphics[width=0.7\linewidth]{figs/locat_scale.png}
+\end{figure}
+
+
+\flushright
+\tiny Suggested readings: Lester et al. (2021); McNeish (2021); McNeish \& Hamaker (2020)
+
+---
+
+## Descriptive Statistics, Correlations, Preprocessing
+
+\scriptsize
+
+When working with multilevel data, both \textbf{descriptive statistics} and \textbf{correlations} should be computed and reported separately at the \textbf{within-person} and \textbf{between-person} levels.
+
+\vspace{0.5em}
+
+In addition, it is recommended to report:
+\begin{itemize}
+  \item Proper operationalization of \textbf{time} (for ILD), such as fixing a meaningful zero point (usually the first measurement occasion) and using an appropriate metric (e.g., transforming dates into numeric values representing days or weeks).
+  \item the number of \textbf{observations/measurements} within each cluster,
+  \item adding the necessary centered variables,
+  \item and, for Level-1 predictors, the average values within clusters.
+\end{itemize}
+
+\vspace{0.5em}
+
+\textbf{Examples} (see Supplementary Materials of these articles for the relevant code):
+\begin{itemize}
+  \item Avanzi, Perinelli, \& Mariani (2023): Application to cross-sectional clustered data.
+  \item Menghini, Perinelli, \& Balducci (2025): Intensive Longitudinal Design (ILD) example, including a complete preprocessing pipeline with both \textit{required} and \textit{recommended} steps.
+  \item Perinelli, Vignoli et al. (2023): Preprocessing ILD for DSEM applications.
+\end{itemize}
+
+
+# Data
+
+Well, now that you’ve learned a lot about multilevel modeling, it’s time to apply that knowledge to data and software! \faSmileBeam[regular]
+
+We have 4 options:
+
+\begin{itemize}
+  \item Explore and work with this R-based pipeline: \url{https://www.rensvandeschoot.com/tutorials/lme4/}.
+  \item Explore and work with M\textit{plus} files provided by Geiser (2013, Chapter 5): \url{https://www.guilford.com/companion-site/Data-Analysis-with-Mplus/9781462502455}.
+  \item Explore and work with the M\textit{plus} examples and visual guides provided in the folder \texttt{Example\_Mplus}.
+  \item Work with your own data — for example, your dataset, a paper in progress, or an article you’ve read and want to discuss.
+\end{itemize}
+
+
+# References
+
+\tiny
+
+\begin{itemize}
+  \item Aguinis, H., Beltran, J. R., \& Marshall, J. D. (2024). Performance: Confirming, refining, and refuting theories. \textit{Journal of Management Scientific Reports, 2}(2), 135-153. \url{https://doi.org/10.1177/27550311241247487}
+  \item Avanzi, L., Perinelli, E., \& Mariani, M. G. (2023). The effect of individual, group, and shared organizational identification on job satisfaction and collective actual turnover. \textit{European Journal of Social Psychology, 53}(5), 956-969. \url{https://doi.org/10.1002/ejsp.2946}
+  \item Biemann, T., Cole, M. S., \& Voelpel, S. (2012). Within-group agreement: On the use (and misuse) of $r_{WG}$ and $r_{WG(J)}$ in leadership research and some best practice guidelines. \textit{The Leadership Quarterly, 23}(1), 66-80. \url{https://doi.org/10.1016/j.leaqua.2011.11.006}
+  \item Enders, C. K., \& Tofighi, D. (2007). Centering predictor variables in cross-sectional multilevel models: A new look at an old issue. \textit{Psychological Methods, 12}(2), 121–138. \url{https://doi.org/10.1037/1082-989X.12.2.121}
+  \item Geiser, C. (2013). \textit{Data analysis with Mplus}. The Guilford Press.
+  \item Geldhof, G. J., Preacher, K. J., \& Zyphur, M. J. (2014). Reliability estimation in a multilevel confirmatory factor analysis framework. \textit{Psychological Methods, 19}(1), 72–91. \url{https://doi.org/10.1037/a0032138}
+  \item González-Romá, V., \& Hernández, A. (2017). Multilevel modeling: Research-based lessons for substantive researchers. \textit{Annual Review of Organizational Psychology and Organizational Behavior, 4}, 183-210. \url{https://doi.org/10.1146/annurev-orgpsych-041015-062407}
+  \item González-Romá, V., \& Hernández, A. (2023). Conducting and evaluating multilevel studies: Recommendations, resources, and a checklist. \textit{Organizational Research Methods, 26}(4), 629-654. \url{https://doi.org/10.1177/10944281211060712}
+\end{itemize}
+
+---
+
+\tiny
+
+\begin{itemize}
+  \item Grimm, K. J., Ram, N., \& Estabrook, R. (2017). \textit{Growth Modeling: Structural equation and multilevel modeling approaches}. Guilford Press.
+  \item Hamaker, E. L., \& Grasman, R. P. (2015). To center or not to center? Investigating inertia with a multilevel autoregressive model. \textit{Frontiers in Psychology, 5}, Article 1492. \url{https://doi.org/10.3389/fpsyg.2014.01492}
+  \item Hamaker, E. L., \& Muthén, B. (2020). The fixed versus random effects debate and how it relates to centering in multilevel modeling. \textit{Psychological Methods, 25}(3), 365–379. \url{https://doi.org/10.1037/met0000239}
+  \item Heck, R., \& Thomas, S. L. (2015). \textit{An introduction to multilevel modeling techniques: MLM and SEM approaches using Mplus} (3rd Ed.). Routledge.
+  \item Heck, R. H., \& Reid, T. (2023). Multilevel structural equation modeling. In R. H. Hoyle (Ed.), \textit{Handbook of structural equation modeling} (2nd ed., pp. 481–499). The Guilford Press.
+  \item Hox, J. J., Moerbeek, M., \& van de Schoot, R. (2017). \textit{Multilevel analysis: Techniques and applications} (3rd ed.). Routledge.
+  \item LeBreton, J. M., Moeller, A. N., \& Wittmer, J. L. (2023). Data aggregation in multilevel research: Best practice recommendations and tools for moving forward. \textit{Journal of Business and Psychology, 38}(2), 239-258. \url{https://doi.org/10.1007/s10869-022-09853-9}
+\end{itemize}
+
+---
+
+\tiny
+
+\begin{itemize}
+  \item LeBreton, J. M., \& Senter, J. L. (2008). Answers to 20 questions about interrater reliability and interrater agreement. \textit{Organizational Research Methods, 11}(4), 815-852. \url{https://doi.org/10.1177/1094428106296642}
+  \item Lester, H. F., Cullen-Lester, K. L., \& Walters, R. W. (2021). From nuisance to novel research questions: Using multilevel models to predict heterogeneous variances. \textit{Organizational Research Methods, 24}(2), 342-388. \url{https://doi.org/10.1177/1094428119887434}
+  \item Marsh, H. W., Pekrun, R., Parker, P. D., Murayama, K., Guo, J., Dicke, T., \& Arens, A. K. (2019). The murky distinction between self-concept and self-efficacy: Beware of lurking jingle-jangle fallacies. \textit{Journal of Educational Psychology, 111}(2), 331–353. \url{https://doi.org/10.1037/edu0000281}
+  \item McNeish, D. (2017a). Small sample methods for multilevel modeling: A colloquial elucidation of REML and the Kenward-Roger correction. \textit{Multivariate Behavioral Research, 52}(5), 661-670. \url{https://doi.org/10.1080/00273171.2017.1344538}
+  \item McNeish, D. (2017b). Multilevel mediation with small samples: A cautionary note on the multilevel structural equation modeling framework. \textit{Structural Equation Modeling: A Multidisciplinary Journal, 24}(4), 609-625. \url{https://doi.org/10.1080/10705511.2017.1280797}
+  \item McNeish, D., \& Hamaker, E. L. (2020). A primer on two-level dynamic structural equation models for intensive longitudinal data in Mplus. \textit{Psychological Methods, 25}(5), 610–635. \url{https://doi.org/10.1037/met0000250}
+  \item McNeish, D. (2021). Specifying location-scale models for heterogeneous variances as multilevel SEMs. \textit{Organizational Research Methods, 24}(3), 630-653. \url{https://doi.org/10.1177/1094428120913083}
+\end{itemize}
+
+---
+
+\tiny
+
+\begin{itemize}
+  \item McNeish, D., Stapleton, L. M., \& Silverman, R. D. (2017). On the unnecessary ubiquity of hierarchical linear modeling. \textit{Psychological Methods, 22}(1), 114–140. \url{https://doi.org/10.1037/met0000078}
+  \item Menghini, L., Perinelli, E., \& Balducci, C. (2025). Manipulation of Intensive Longitudinal Data: A Tutorial in R With Applications on the Job Demand‐Control Model. \textit{International Journal of Psychology, 60}(2), Article e70040. \url{https://doi.org/10.1002/ijop.70040}
+  \item Nakagawa, S., \& Schielzeth, H. (2013). A general and simple method for obtaining $R^2$ from generalized linear mixed‐effects models. \textit{Methods in ecology and evolution, 4}(2), 133-142. \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
+  \item Perinelli, E., Pisanu, F., Checchi, D., Scalas, L. F., \& Fraccaroli, F. (2022). Academic self-concept change in junior high school students and relationships with academic achievement. \textit{Contemporary Educational Psychology}, \textit{69}, Article 102071. \url{https://doi.org/10.1016/j.cedpsych.2022.102071}
+  \item Perinelli, E., Vignoli, M., Kröner, F., Müller, A., Genrich, M., \& Fraccaroli, F. (2023). Workers' emotional exhaustion and mental well-being over the COVID-19 pandemic: A Dynamic Structural Equation Modeling (DSEM) approach. \textit{Frontiers in Psychology}, \textit{14}, Article 1222845. \url{https://doi.org/10.3389/fpsyg.2023.1222845}
+  \item Ployhart, R. E., Bliese, P. D., \& Strizver, S. D. (2025). Intensive Longitudinal Models. \textit{Annual Review of Organizational Psychology and Organizational Behavior, 12}, 343-367. \url{https://doi.org/10.1146/annurev-orgpsych-110622-054803}
+  \item Preacher, K. J., Zhang, Z., \& Zyphur, M. J. (2011). Alternative methods for assessing mediation in multilevel data: The advantages of multilevel SEM. \textit{Structural Equation Modeling, 18}(2), 161-182. \url{https://doi.org/10.1080/10705511.2011.557329}
+\end{itemize}
+
+---
+
+\tiny
+
+\begin{itemize}
+  \item Preacher, K. J., Zhang, Z., \& Zyphur, M. J. (2016). Multilevel structural equation models for assessing moderation within and across levels of analysis. \textit{Psychological Methods, 21}(2), 189–205. \url{https://doi.org/10.1037/met0000052}
+  \item Preacher, K. J., Zyphur, M. J., \& Zhang, Z. (2010). A general multilevel SEM framework for assessing multilevel mediation. \textit{Psychological Methods, 15}(3), 209–233. \url{https://doi.org/10.1037/a0020141}
+  \item Raudenbush, S. W., \& Bryk, A. S. (2002). \textit{Hierarchical linear models: Applications and data analysis methods} (2nd ed.). Sage.
+  \item Revelle, W., \& Wilt, J. (2019). Analyzing dynamic data: A tutorial. \textit{Personality and Individual Differences, 136}, 38-51. \url{https://doi.org/10.1016/j.paid.2017.08.020}
+  \item Sadikaj, G., Wright, A. G. C., Dunkley, D. M., Zuroff, D. C., \& Moskowitz, D. S. (2021). Multilevel structural equation modeling for intensive longitudinal data: A practical guide for personality researchers. In J. F. Rauthmann (Ed.), \textit{The handbook of personality dynamics and processes} (pp. 855–885). Elsevier Academic Press. \url{https://doi.org/10.1016/B978-0-12-813995-0.00033-9}
+  \item Shrout, P. E., \& Lane, S. P. (2012). Psychometrics. In M. R. Mehl \& T. S. Conner (Eds.), \textit{Handbook of research methods for studying daily life} (pp. 302–320). The Guilford Press.
+  \item Simpson, E. H. (1951). The interpretation of interaction in contingency tables. \textit{Journal of the Royal Statistical Society: Series B (Methodological), 13}(2), 238-241. \url{https://doi.org/10.1111/j.2517-6161.1951.tb00088.x}
+  \item Snijders, T. A., \& Bosker, R. (2012). \textit{Multilevel analysis: An introduction to basic and advanced multilevel modeling} (2nd ed.). Sage.
+  \item Tay, L., Woo, S. E., \& Vermunt, J. K. (2014). A conceptual and methodological framework for psychometric isomorphism: Validation of multilevel construct measures. \textit{Organizational Research Methods, 17}(1), 77-106. \url{https://doi.org/10.1177/1094428113517008}
+\end{itemize}
+
+---
+
+\huge
+\begin{center}
+		Thanks for your attention
+\end{center}
+
+\normalsize
+
+\begin{center}
+	\href{mailto:enrico.perinelli@unitn.it}{\nolinkurl{enrico.perinelli@unitn.it}} \\
+\end{center}
+
+\vspace{10pt}
+		
+\begin{figure}
+  \centering
+        \includegraphics[width=0.4\linewidth]{figs/logoDIPSCO.png}
+\end{figure}
+
+\vspace{10pt}
+
+\begin{center}
+\small
+Presentation and material available at  
+\texttt{\url{https://github.com/EnricoPerinelli/Intro-Multilevel}}
+\end{center}
