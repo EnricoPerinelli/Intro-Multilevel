@@ -526,7 +526,7 @@ To make the best centering choice, \textbf{carefully read} \textcolor{blue}{Gonz
 ::: {.callout-warning title="Centering in multilevel autoregressive models"}
 When dealing with multilevel autoregressive models, carefully read Hamaker and Grasman (2015). Indeed, in this case the autoregressive $t{-}1$ variable (e.g., $x_{t-1}$ predicting $x_t$) should \textbf{not} be group-mean centered, as this may introduce the \textit{Nickell bias}: By removing the person mean, you risk eliminating meaningful information and biasing the autoregressive estimate downward.  
 
-Other predictors can be centered as usual: between-level variables grand-mean centered, within-level variables group-mean centered.  
+Other predictors can be centered as usual (see previous slide).  
 
 Instead, in the context of DSEM M\textit{plus} automatically apply the latent centering approach (see McNeish \& Hamaker, 2020).
 :::
