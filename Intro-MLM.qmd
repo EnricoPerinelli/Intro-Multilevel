@@ -528,7 +528,7 @@ When dealing with multilevel autoregressive models, carefully read Hamaker and G
 
 Other predictors can be centered as usual (see previous slide).  
 
-Instead, in the context of DSEM M\textit{plus} automatically apply the latent centering approach (see McNeish \& Hamaker, 2020).
+Instead, in the context of DSEM M\textit{plus} automatically applies the latent centering approach (see McNeish \& Hamaker, 2020).
 :::
 
 ---
