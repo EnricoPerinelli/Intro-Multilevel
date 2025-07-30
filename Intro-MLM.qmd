@@ -810,6 +810,8 @@ In \texttt{R} \rightarrow\ \texttt{performance::r2} or \texttt{MuMIn::r.squaredG
 
 # Advanced topics
 
+\small
+
 Multilevel modeling includes additional methodological issues that deserve attention.  
 
 In what follows, there are selected concepts, each briefly introduced and referenced for further reading.  
@@ -819,13 +821,16 @@ In what follows, there are selected concepts, each briefly introduced and refere
 ::: {.callout-tip title="Comprehensive Resources"}
 A comprehensive review of multilevel modeling topics (including those not covered here, such as statistical power and handling missing data) can be found in \textcolor{blue}{González-Romá and Hernández (2023)} and \textcolor{blue}{LeBreton et al. (2023)}.  
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 For detailed textbook treatments, see \textcolor{blue}{Raudenbush and Bryk (2002)}, \textcolor{blue}{Snijders and Bosker (2012)}, \textcolor{blue}{Hox, Moerbeek, and van de Schoot (2017)}.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 For Multilevel SEM, see \textcolor{blue}{Heck and Thomas (2015)}, \textcolor{blue}{Heck and Reid (2023)}, \textcolor{blue}{Sadikaj et al. (2021)}.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
+For a comprehensive treatment of multilevel modeling in R, see \textcolor{blue}{Finch and Bolin (2024)}.
+
+\vspace{0.2cm}
 For a parallel overview between latent growth modeling and multilevel modeling, see \textcolor{blue}{Grimm et al. (2017)}.
 :::
 
@@ -980,6 +985,7 @@ We have 4 options:
   \item Avanzi, L., Perinelli, E., \& Mariani, M. G. (2023). The effect of individual, group, and shared organizational identification on job satisfaction and collective actual turnover. \textit{European Journal of Social Psychology, 53}(5), 956-969. \url{https://doi.org/10.1002/ejsp.2946}
   \item Biemann, T., Cole, M. S., \& Voelpel, S. (2012). Within-group agreement: On the use (and misuse) of $r_{WG}$ and $r_{WG(J)}$ in leadership research and some best practice guidelines. \textit{The Leadership Quarterly, 23}(1), 66-80. \url{https://doi.org/10.1016/j.leaqua.2011.11.006}
   \item Enders, C. K., \& Tofighi, D. (2007). Centering predictor variables in cross-sectional multilevel models: A new look at an old issue. \textit{Psychological Methods, 12}(2), 121–138. \url{https://doi.org/10.1037/1082-989X.12.2.121}
+  \item Finch, W. H., \& Bolin, J. E. (2024). \textit{Multilevel modeling using R} (3rd ed.). Chapman and Hall/CRC.
   \item Geiser, C. (2013). \textit{Data analysis with Mplus}. The Guilford Press.
   \item Geldhof, G. J., Preacher, K. J., \& Zyphur, M. J. (2014). Reliability estimation in a multilevel confirmatory factor analysis framework. \textit{Psychological Methods, 19}(1), 72–91. \url{https://doi.org/10.1037/a0032138}
   \item González-Romá, V., \& Hernández, A. (2017). Multilevel modeling: Research-based lessons for substantive researchers. \textit{Annual Review of Organizational Psychology and Organizational Behavior, 4}, 183-210. \url{https://doi.org/10.1146/annurev-orgpsych-041015-062407}
